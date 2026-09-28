@@ -2,15 +2,16 @@
 import streamlit as st
 import pandas as pd
 import yfinance as yf
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 # criar as funções de carregamento de dados
-    # Cotações do Itau - ITUB4 - 2010 a 2024
-@st.cache_data
+    # Cotações do Itau - ITUB4 - 2010 até hoje
+@st.cache_data(ttl=86400)
 def carregar_dados(empresas):
     texto_tickers = " ".join(empresas)
     dados_acao = yf.Tickers(texto_tickers)
-    cotacoes_acao = dados_acao.history(start="2010-01-01", end="2024-07-01")
+    hoje = datetime.today().strftime("%Y-%m-%d")
+    cotacoes_acao = dados_acao.history(start="2010-01-01", end=hoje)
     cotacoes_acao = cotacoes_acao["Close"]
     return cotacoes_acao
 
@@ -57,7 +58,8 @@ intervalo_data = st.sidebar.slider("Selecione o período",
 dados = dados.loc[intervalo_data[0]:intervalo_data[1]]
 
 # criar o grafico
-st.line_chart(dados.resample("W").last())
+grafico = st.empty()
+grafico.line_chart(dados.resample("W").last())
 
 
 # calculo de perfomance
@@ -106,4 +108,3 @@ Essa foi a perfomance de cada ativo no período selecionado:
 
 {texto_performance_carteira}
 """)
-
